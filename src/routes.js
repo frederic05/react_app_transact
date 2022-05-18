@@ -22,8 +22,9 @@ import Register from "views/examples/Register.js";
 import Login from "views/examples/Login.js";
 import Tables from "views/examples/Tables.js";
 import Icons from "views/examples/Icons.js";
-import Test from "views/examples/test";
-import Otp from 'views/examples/otp'
+import Otp from 'views/examples/otp';
+import Utilisateur from './views/examples/utilisateur'
+import ListeOperation from "views/examples/operation/gesoperation";
 
 var routes = [
   {
@@ -76,10 +77,10 @@ var routes = [
     layout: "/auth",
   },
   {
-    path: "/test",
-    name: "Utilisateur",
+    path: "/utilisateur",
+    name: "Utilisateurs",
     icon: "ni ni ni-bag-17 text-pink",
-    component: Test,
+    component: Utilisateur,
     layout: "/accueil",
   },
   {
@@ -88,7 +89,14 @@ var routes = [
     icon: "ni ni-circle-08 text-pink",
     component: Otp,
     layout: "/auth",
-  }
+  },
+  {
+    path: "/operation",
+    name: "Operations",
+    icon: "ni ni-credit-card text-pink", 
+    component: ListeOperation,
+    layout: "/accueil",
+  },
 ];
 export default routes;
 

@@ -31,14 +31,119 @@ import {
   Row,
   Col,
 } from "reactstrap";
-import { deprecationHandler } from "moment";
+
+import { useState}  from "react";
+import {useHistory} from "react-router-dom";
+import    axios     from "axios";
+
+
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+import { getAuth, signInWithPopup, getRedirectResult, GoogleAuthProvider } from "firebase/auth";
+
+
+
+/*CONNECTION PAR LA SAISIR DES ACCES*/
 
 const Login = () => {
 
+  const history                   = useHistory();
+  const url                       = 'http://localhost:4003/userAuth'
+  const [p_login, setLogin]       = useState('');
+  const [p_mdp, setMdp]           = useState('');
+  const [loading, setLoading]     = useState(false);
+  const [err, setErr]             = useState(false);
+  const data                      = {p_login, p_mdp}
+  
 
-  const Handler = ()=>{
-    alert('bonjour');
-  }
+   const Handler = ()=> { 
+     
+                              setLoading(true);
+                              axios.post(url, data)
+                               .then((res)=> {
+                                    if(res.status === 200){
+                                      const result = res.data;
+                                      result?.forEach(element => {
+                                        const ctx = element._resultat
+                                        if (ctx._status === 200){
+                                          history.push("/auth/otp");
+                                        }else{
+                                          setTimeout(()=> setLoading(false), 2000)
+                                          setTimeout(()=> setErr(true), 2000)                                         
+                                          setTimeout(()=> setErr(false), 5000)
+                                          console.log('LOGIN OU MOT DE PASSE INCORRECT !')
+                                        }
+                                      });                                                                      
+                                       }})
+                               .catch((error) => {console.log(error);});}
+
+/* FIN CONNECTION PAR LA SAISIE DES ACCES*/
+
+/************************************************************************************************************************************************* */
+
+/*CONNECTION AVEC LE BOUTON DE GOOGLE*/
+
+//DECLARATION DES VARIABLES
+const firebaseConfig = {
+  apiKey            : "AIzaSyANrvaTN4WHqC7I3-YVY2FGr4lIqH6eH64",
+  authDomain        : "auth-8a311.firebaseapp.com",
+  projectId         : "auth-8a311",
+  storageBucket     : "auth-8a311.appspot.com",
+  messagingSenderId : "922361250788",
+  appId             : "1:922361250788:web:6c21bef2e98b610fc2bdf1",
+  measurementId     : "G-5WJ0T2FEPH"
+};
+
+const provider      = new GoogleAuthProvider();
+const app           = initializeApp(firebaseConfig);
+const analytics     = getAnalytics(app);
+provider.addScope('https://www.googleapis.com/auth/contacts.readonly');
+provider.setCustomParameters({
+'login_hint': 'fredericignace005@gmail.com'
+});
+
+const auth = getAuth();
+
+//DEBUT TRAITEMENT
+
+getRedirectResult(auth)
+.then((result) => {
+  const credential    = GoogleAuthProvider.credentialFromResult(result);
+  const token         = credential.accessToken;
+  const user          = result.user;
+}).catch((error) => {
+  const errorCode     = error.code;
+  const errorMessage  = error.message;
+  const email         = error.email;
+  const credential    = GoogleAuthProvider.credentialFromError(error);
+});
+
+auth.languageCode = 'it';
+
+const initlogin = () => {
+
+  signInWithPopup(auth, provider)
+  .then((result) => {
+    const credential  = GoogleAuthProvider.credentialFromResult(result);
+    const token       = credential.accessToken;
+    const user        = result.user;
+    const data        = user.providerData
+    data?.forEach((ele)=> {
+      sessionStorage.setItem('name', ele.displayName);
+      sessionStorage.setItem('image', ele.photoURL);
+      sessionStorage.setItem('email', ele.email);
+    });
+
+    history.push("/accueil/index");
+
+  }).catch((error) => {
+    const credential = GoogleAuthProvider.credentialFromError(error);
+  });
+}
+
+/*FIN CONNECTION AVEC LE BOUTON DE GOOGLE*/
+
+
 
   return (
     <>
@@ -70,7 +175,7 @@ const Login = () => {
                 className="btn-neutral btn-icon"
                 color="default"
                 href="#pablo"
-                onClick={(e) => e.preventDefault()}
+                onClick={() => initlogin()}
               >
                 <span className="btn-inner--icon">
                   <img
@@ -89,6 +194,10 @@ const Login = () => {
             <div className="text-center text-muted mb-4">
               <h2>Se connecter avec mes acces</h2>
             </div>
+
+               {err && <div className="alert alert-danger alert-dismissible fade show" role="alert" style={{textAlign: 'center'}}>
+                  Login ou mot de passe incorrect !
+                </div>}
             <Form role="form">
               <FormGroup className="mb-3">
                 <InputGroup className="input-group-alternative">
@@ -98,9 +207,11 @@ const Login = () => {
                     </InputGroupText>
                   </InputGroupAddon>
                   <Input
-                    placeholder="Email"
-                    type="email"
-                    autoComplete="new-email"
+                    placeholder="Login"
+                    type="text"
+                    autoComplete="new-text"
+                    value={p_login}
+                    onChange={(e)=> setLogin(e.target.value)}
                   />
                 </InputGroup>
               </FormGroup>
@@ -115,6 +226,9 @@ const Login = () => {
                     placeholder="Mot de passe"
                     type="password"
                     autoComplete="new-password"
+
+                    value={p_mdp}
+                    onChange={(e)=> setMdp(e.target.value)}
                   />
                 </InputGroup>
               </FormGroup>
@@ -133,9 +247,14 @@ const Login = () => {
               </div>
               <div className="text-center">
                 <Button className="my-4" color="primary" type="button" onClick={Handler}>
-                  Se connecter
+                {loading && <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>} Se connecter  
                 </Button>
+
+               
+
+                
               </div>
+              
             </Form>
           </CardBody>
         </Card>

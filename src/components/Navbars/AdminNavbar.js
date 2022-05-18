@@ -33,8 +33,22 @@ import {
   Container,
   Media,
 } from "reactstrap";
+import {useHistory} from "react-router-dom";
 
 const AdminNavbar = (props) => {
+
+  const history                 = useHistory();
+  const logaot = ()=> {
+      sessionStorage.removeItem('name');
+      sessionStorage.removeItem('image');
+      sessionStorage.removeItem('email');
+      history.push("/auth/login");
+  }
+
+  const nom   =  sessionStorage.getItem('name');
+  const image =  sessionStorage.getItem('image');
+  const email =  sessionStorage.getItem('email');
+
   return (
     <>
       <Navbar className="navbar-top navbar-dark" expand="md" id="navbar-main">
@@ -64,22 +78,19 @@ const AdminNavbar = (props) => {
                   <span className="avatar avatar-sm rounded-circle">
                     <img
                       alt="..."
-                      src={
-                        require("../../assets/img/theme/team-4-800x800.jpg")
-                          .default
-                      }
+                      src={image}
                     />
                   </span>
                   <Media className="ml-2 d-none d-lg-block">
                     <span className="mb-0 text-sm font-weight-bold">
-                      Frederic Ignace
+                      {nom}
                     </span>
                   </Media>
                 </Media>
               </DropdownToggle>
               <DropdownMenu className="dropdown-menu-arrow" right>
                 <DropdownItem className="noti-title" header tag="div">
-                  <h6 className="text-overflow m-0">Bienvenue!</h6>
+                  <h6 className="text-overflow m-0">Bienvenue: {nom}</h6>
                 </DropdownItem>
                 <DropdownItem to="/admin/user-profile" tag={Link}>
                   <i className="ni ni-single-02" />
@@ -98,7 +109,7 @@ const AdminNavbar = (props) => {
                   <span>Support</span>
                 </DropdownItem>
                 <DropdownItem divider />
-                <DropdownItem href="#pablo" onClick={(e) => e.preventDefault()}>
+                <DropdownItem href="#pablo" onClick={() => logaot()}>
                   <i className="ni ni-user-run" />
                   <span>Logout</span>
                 </DropdownItem>
